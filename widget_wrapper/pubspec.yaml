@@ -13,11 +13,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  pdf: ^3.10.0
-
-dependency_overrides:
-  pdf:
+  pdf: 
     path: ../pdf
+
+#dependency_overrides:
+#  pdf:
+#    path: ../pdf
 
 dev_dependencies:
   flutter_lints: ^5.0.0
