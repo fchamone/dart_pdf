@@ -9,11 +9,14 @@
 - Add support for custom fonts in SVGs. [Tyler Denniston]
 - Fix MultiPage.maxPages not checked with release builds
 - Fix PdfColorCmyk.fromRgb
-- Table widget refactors [Graham Smith]
+- (REMOVED IN MERGE) Table widget refactors [Graham Smith] (REMOVED IN MERGE)
 - Add support for creating PDF/A 3b [ilaurillard]
 - Add helper functions to replace text styles and cell content [Brian Kayfitz]
 - Fix TextStyle merge decoration [AtlasAutocode]
 - Use secure random number generator for document ID generation
+## Unreleased
+
+- Add support for table spans [gustl22]
 
 ## 3.11.1
 
