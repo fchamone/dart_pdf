@@ -66,13 +66,12 @@ class TableBorder extends Border {
   }) {
     final side = BorderSide(color: color, width: width, style: style);
     return TableBorder(
-      top: side,
-      right: side,
-      bottom: side,
-      left: side,
-      horizontalInside: side,
-      verticalInside: side,
-    );
+        top: side,
+        right: side,
+        bottom: side,
+        left: side,
+        horizontalInside: side,
+        verticalInside: side);
   }
 
   /// Creates a border for a table where all the interior sides use the same styling and all the exterior sides use the same styling.
@@ -150,8 +149,8 @@ class TableContext extends WidgetContext {
 class ColumnLayout {
   ColumnLayout(this.width, this.flex);
 
-  final double width;
-  final double flex;
+  final double? width;
+  final double? flex;
 }
 
 abstract class TableColumnWidth {
@@ -168,12 +167,9 @@ class IntrinsicColumnWidth extends TableColumnWidth {
 
   @override
   ColumnLayout layout(
-    Widget child,
-    Context context,
-    BoxConstraints constraints,
-  ) {
+      Widget child, Context context, BoxConstraints constraints) {
     if (flex != null) {
-      return ColumnLayout(0, flex!);
+      return ColumnLayout(0, flex);
     }
 
     child.layout(context, const BoxConstraints());
@@ -319,7 +315,7 @@ class Table extends Widget with SpanningWidget {
 
   final TableWidth tableWidth;
 
-  final List<double> _widths = <double>[];
+  final List<double?> _widths = <double?>[];
   final List<double> _heights = <double>[];
 
   final TableContext _context = TableContext();
@@ -342,27 +338,28 @@ class Table extends Widget with SpanningWidget {
   void layout(Context context, BoxConstraints constraints,
       {bool parentUsesSize = false}) {
     // Compute required width for all row/columns width flex
-    final flex = <double>[];
+    final flex = <double?>[];
     _widths.clear();
     _heights.clear();
     var index = 0;
 
     for (final row in children) {
-      for (final entry in row.children.asMap().entries) {
-        final index = entry.key;
-        final child = entry.value;
-        final columnWidth = columnWidths?[index] ?? defaultColumnWidth;
+      var n = 0;
+      for (final child in row.children) {
+        final columnWidth = columnWidths != null && columnWidths![n] != null
+            ? columnWidths![n]!
+            : defaultColumnWidth;
         final columnLayout = columnWidth.layout(child, context, constraints);
-
-        if (index >= flex.length) {
+        if (flex.length < n + 1) {
           flex.add(columnLayout.flex);
           _widths.add(columnLayout.width);
         } else {
-          if (columnLayout.flex > 0) {
-            flex[index] = math.max(flex[index], columnLayout.flex);
+          if (columnLayout.flex! > 0) {
+            flex[n] = math.max(flex[n]!, columnLayout.flex!);
           }
-          _widths[index] = math.max(_widths[index], columnLayout.width);
+          _widths[n] = math.max(_widths[n]!, columnLayout.width!);
         }
+        n++;
       }
     }
 
@@ -371,20 +368,20 @@ class Table extends Widget with SpanningWidget {
       return;
     }
 
-    final maxWidth = _widths.fold(0.0, (sum, element) => sum + element);
+    final maxWidth = _widths.reduce((double? a, double? b) => a! + b!);
 
     // Compute column widths using flex and estimated width
     if (constraints.hasBoundedWidth) {
-      final totalFlex = flex.reduce((double? a, double? b) => a! + b!);
+      final totalFlex = flex.reduce((double? a, double? b) => a! + b!)!;
       var flexSpace = 0.0;
       for (var n = 0; n < _widths.length; n++) {
         if (flex[n] == 0.0) {
-          final newWidth = _widths[n] / maxWidth * constraints.maxWidth;
+          final newWidth = _widths[n]! / maxWidth! * constraints.maxWidth;
           if ((tableWidth == TableWidth.max && totalFlex == 0.0) ||
-              newWidth < _widths[n]) {
+              newWidth < _widths[n]!) {
             _widths[n] = newWidth;
           }
-          flexSpace += _widths[n];
+          flexSpace += _widths[n]!;
         }
       }
       final spacePerFlex = totalFlex > 0.0
@@ -392,14 +389,14 @@ class Table extends Widget with SpanningWidget {
           : double.nan;
 
       for (var n = 0; n < _widths.length; n++) {
-        if (flex[n] > 0.0) {
-          final newWidth = spacePerFlex * flex[n];
+        if (flex[n]! > 0.0) {
+          final newWidth = spacePerFlex * flex[n]!;
           _widths[n] = newWidth;
         }
       }
     }
 
-    final totalWidth = _widths.fold(0.0, (sum, element) => sum + element);
+    final totalWidth = _widths.reduce((double? a, double? b) => a! + b!)!;
 
     // Compute final widths
     var totalHeight = 0.0;
@@ -419,7 +416,7 @@ class Table extends Widget with SpanningWidget {
         assert(child.box != null);
         child.box =
             PdfRect(x, totalHeight, child.box!.width, child.box!.height);
-        x += _widths[n];
+        x += _widths[n]!;
         lineHeight = math.max(lineHeight, child.box!.height);
         n++;
       }
@@ -437,7 +434,7 @@ class Table extends Widget with SpanningWidget {
           assert(child.box != null);
           child.box =
               PdfRect(x, totalHeight, child.box!.width, child.box!.height);
-          x += _widths[n];
+          x += _widths[n]!;
           n++;
         }
       }
